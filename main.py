@@ -2,11 +2,11 @@ import datetime
 import openai
 import tweepy
 from datetime import date
-import schedule
-import time
 
-#Retrieve keys from other file
-all_keys = open("keys", 'r').read().splitlines()
+#Retrieve keys.txt from other file
+all_keys = open("keys.txt", 'r').read().splitlines()
+# CAREFUL! When running from crontab; mention full path from the cronjob working directory.
+# full path in Debian VM would be /home/asaussier99/scripts/on_this_day_bot/keys.txt
 
 twitter_api_key = all_keys[0]
 twitter_api_key_secret = all_keys[1]
@@ -35,9 +35,6 @@ request = "Tell me about an interesting event that happened on " + today + " in 
           ". Format the response to optimize engagement for a twitter post. " \
           "Spell the full date. "
 
-trigger_time_hour = 16
-
-
 def get_chatgpt_response():
     # Send request to chat gpt
     response = openai.Completion.create(
@@ -48,18 +45,16 @@ def get_chatgpt_response():
     )
     return response
 
-while True:
-    current_hour = datetime.datetime.now().hour
-    if current_hour == trigger_time_hour:
-        # Need to parse response to retrieve exactly the chatgpt text completion
-        chatgpt_response = get_chatgpt_response().choices[0].text
-        #Publish tweet
-        tweet = twitter_v2_client.create_tweet(text=chatgpt_response)
-        print("Tweet sent: " + chatgpt_response +
-              ".\n\nSleeping now for 5 hours")
-        time.sleep(18000) #Sleeps 5 hours for safety
 
-    else:
-        print("Not " + str(trigger_time_hour)+ " pm yet")
+# Need to parse response to retrieve exactly the chatgpt text completion
+chatgpt_response = get_chatgpt_response().choices[0].text
 
-    time.sleep(30) #gives the script some rest
+#Publish tweet
+tweet = twitter_v2_client.create_tweet(text=chatgpt_response)
+print("Tweet sent: " + chatgpt_response)
+print("Time sent: " + str(datetime.datetime.now()))
+
+
+
+
+#To do: set up a CRON job in the tmux shell to have this run once a day. Remove while loop.
