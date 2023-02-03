@@ -40,7 +40,7 @@ def get_chatgpt_response():
     response = openai.Completion.create(
         model="text-davinci-003",
         prompt=request,
-        temperature=0.6,
+        temperature=0,
         max_tokens=500
     )
     return response
